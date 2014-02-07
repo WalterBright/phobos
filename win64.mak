@@ -210,6 +210,8 @@ SRC_STD_C_OSX= std\c\osx\socket.d
 
 SRC_STD_C_FREEBSD= std\c\freebsd\socket.d
 
+SRC_STD_BUFFER=std\buffer\scopebuffer.d
+
 SRC_STD_INTERNAL= std\internal\processinit.d std\internal\uni.d std\internal\uni_tab.d \
 	std\internal\unicode_tables.d std\internal\unicode_comp.d std\internal\unicode_decomp.d \
 	std\internal\unicode_grapheme.d std\internal\unicode_norm.d
@@ -231,6 +233,7 @@ SRC_TO_COMPILE_NOT_STD= \
 	$(SRC_STD_C) \
 	$(SRC_STD_WIN) \
 	$(SRC_STD_C_WIN) \
+	$(SRC_STD_BUFFER) \
 	$(SRC_STD_INTERNAL) \
 	$(SRC_STD_INTERNAL_DIGEST) \
 	$(SRC_STD_INTERNAL_MATH) \
@@ -674,6 +677,9 @@ $(DOC)\std_zip.html : $(STDDOC) std\zip.d
 $(DOC)\std_zlib.html : $(STDDOC) std\zlib.d
 	$(DMD) -c -o- $(DDOCFLAGS) -Df$(DOC)\std_zlib.html $(STDDOC) std\zlib.d
 
+$(DOC)\std_buffer_scopebuffer.html : $(STDDOC) std\buffer\scopebuffer.d
+	$(DMD) -c -o- $(DDOCFLAGS) -Df$(DOC)\std_buffer_scopebuffer.html $(STDDOC) std\buffer\scopebuffer.d
+
 $(DOC)\std_net_isemail.html : $(STDDOC) std\net\isemail.d
 	$(DMD) -c -o- $(DDOCFLAGS) -Df$(DOC)\std_net_isemail.html $(STDDOC) std\net\isemail.d
 
@@ -749,9 +755,9 @@ $(DOC)\etc_c_zlib.html : $(STDDOC) etc\c\zlib.d
 zip : win32.mak win64.mak posix.mak $(STDDOC) $(SRC) \
 	$(SRC_STD) $(SRC_STD_C) $(SRC_STD_WIN) \
 	$(SRC_STD_C_WIN) $(SRC_STD_C_LINUX) $(SRC_STD_C_OSX) $(SRC_STD_C_FREEBSD) \
-	$(SRC_ETC) $(SRC_ETC_C) $(SRC_ZLIB) $(SRC_STD_NET) $(SRC_STD_DIGEST)\
+	$(SRC_ETC) $(SRC_ETC_C) $(SRC_ZLIB) $(SRC_STD_NET) $(SRC_STD_DIGEST) \
 	$(SRC_STD_INTERNAL) $(SRC_STD_INTERNAL_DIGEST) $(SRC_STD_INTERNAL_MATH) \
-	$(SRC_STD_INTERNAL_WINDOWS)
+	$(SRC_STD_INTERNAL_WINDOWS) $(SRC_STD_BUFFER)
 	del phobos.zip
 	zip32 -u phobos win32.mak win64.mak posix.mak $(STDDOC)
 	zip32 -u phobos $(SRC)
@@ -762,6 +768,7 @@ zip : win32.mak win64.mak posix.mak $(STDDOC) $(SRC) \
 	zip32 -u phobos $(SRC_STD_C_LINUX)
 	zip32 -u phobos $(SRC_STD_C_OSX)
 	zip32 -u phobos $(SRC_STD_C_FREEBSD)
+	zip32 -u phobos $(SRC_STD_BUFFER)
 	zip32 -u phobos $(SRC_STD_INTERNAL)
 	zip32 -u phobos $(SRC_STD_INTERNAL_DIGEST)
 	zip32 -u phobos $(SRC_STD_INTERNAL_MATH)
