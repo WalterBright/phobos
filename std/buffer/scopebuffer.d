@@ -1,4 +1,3 @@
-
 /*
  * Copyright: 2014 by Digital Mars
  * License: $(LINK2 http://boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -51,7 +50,8 @@ void main()
 
 //debug=ScopeBuffer;
 
-struct ScopeBuffer(T)
+struct ScopeBuffer(T, U = uint)
+if(is(U == uint) || is(U == size_t))
 {
     import core.stdc.stdlib : malloc, realloc, free;
     import core.stdc.string : memcpy;
@@ -71,7 +71,7 @@ struct ScopeBuffer(T)
     {
         assert(!(buf.length & resized));
         this.buf = buf.ptr;
-        this.bufLen = cast(uint)buf.length;
+        this.bufLen = cast(U)buf.length;
     }
 
     /**************************
@@ -114,7 +114,7 @@ struct ScopeBuffer(T)
         if (newlen > len)
             resize(newlen <= len * 2 ? len * 2 : newlen);
         buf[i .. newlen] = s[];
-        i = cast(uint)newlen;
+        i = cast(U)newlen;
     }
 
     /******
@@ -187,15 +187,15 @@ struct ScopeBuffer(T)
         }
     body
     {
-        this.i = cast(uint)i;
+        this.i = cast(U)i;
     }
 
   private:
     T* buf;
     // Using uint instead of size_t so the struct fits in 2 registers in 64 bit code
-    uint bufLen;
+    U bufLen;
     enum resized = 1;         // this bit is set in bufLen if we control the memory
-    uint i;
+    U i;
 
     void resize(size_t newsize)
     {
@@ -219,7 +219,7 @@ struct ScopeBuffer(T)
             debug(ScopeBuffer) buf[0 .. bufLen] = 0;
         }
         buf = cast(T*)p;
-        bufLen = cast(uint)newsize;
+        bufLen = cast(U)newsize;
 
         /* This function is called only rarely,
          * inlining results in poorer register allocation.
@@ -232,6 +232,8 @@ struct ScopeBuffer(T)
     }
 }
 
+
+//uint version
 unittest
 {
     import core.stdc.stdio;
@@ -241,6 +243,49 @@ unittest
     {
     // Exercise all the lines of code except for assert(0)'s
     auto textbuf = ScopeBuffer!char(tmpbuf);
+
+    static assert(isOutputRange!(ScopeBuffer!char, char));
+
+    textbuf.put('a');
+    textbuf.put('x');
+    textbuf.put("abc");         // tickle put([])'s resize
+    assert(textbuf.length == 5);
+    assert(textbuf[1..3] == "xa");
+    assert(textbuf[3] == 'b');
+
+    textbuf.pop();
+    assert(textbuf[0..textbuf.length] == "axab");
+
+    textbuf.length = 3;
+    assert(textbuf[0..textbuf.length] == "axa");
+    assert(textbuf[textbuf.length - 1] == 'a');
+    assert(textbuf[1..3] == "xa");
+
+    textbuf.put(cast(dchar)'z');
+    assert(textbuf[] == "axaz");
+
+    textbuf.length = 0;                 // reset for reuse
+    assert(textbuf.length == 0);
+
+    foreach (char c; "asdf;lasdlfaklsdjfalksdjfa;lksdjflkajsfdasdfkja;sdlfj")
+    {
+        textbuf.put(c); // tickle put(c)'s resize
+    }
+    assert(textbuf[] == "asdf;lasdlfaklsdjfalksdjfa;lksdjflkajsfdasdfkja;sdlfj");
+    } // run destructor on textbuf here
+}
+
+
+//size_t version
+unittest
+{
+    import core.stdc.stdio;
+    import std.range;
+
+    char[2] tmpbuf = void;
+    {
+    // Exercise all the lines of code except for assert(0)'s
+    auto textbuf = ScopeBuffer!(char, size_t)(tmpbuf);
 
     static assert(isOutputRange!(ScopeBuffer!char, char));
 
