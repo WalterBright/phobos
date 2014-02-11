@@ -287,7 +287,7 @@ unittest
     // Exercise all the lines of code except for assert(0)'s
     auto textbuf = ScopeBuffer!(char, size_t)(tmpbuf);
 
-    static assert(isOutputRange!(ScopeBuffer!char, char));
+    static assert(isOutputRange!(ScopeBuffer!(char, size_t), char));
 
     textbuf.put('a');
     textbuf.put('x');
