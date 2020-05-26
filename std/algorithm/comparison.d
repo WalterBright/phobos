@@ -1529,7 +1529,7 @@ Iterates the passed arguments and returns the maximum value.
 
 Params:
     args = The values to select the maximum from. At least two arguments must
-    be passed, and they must be comparable with `>`.
+    be passed, and they must be comparable with `<`.
 
 Returns:
     The maximum of the passed-in values. The type of the returned value is
@@ -1566,6 +1566,16 @@ if (T.length >= 2)
     import std.functional : lessThan;
     immutable chooseB = lessThan!(T0, T1)(a, b);
     return cast(typeof(return)) (chooseB ? b : a);
+}
+
+///
+T max(T, U)(T a, U b)
+if (is(T == U) && is(typeof(a < b)))
+{
+   /* Handle the common case without all the template expansions
+    * of the general case
+    */
+    return a < b ? b : a;
 }
 
 ///
@@ -1687,6 +1697,17 @@ if (T.length >= 2)
     immutable chooseA = lessThan!(T0, T1)(a, b);
     return cast(typeof(return)) (chooseA ? a : b);
 }
+
+///
+T min(T, U)(T a, U b)
+if (is(T == U) && is(typeof(a < b)))
+{
+   /* Handle the common case without all the template expansions
+    * of the general case
+    */
+    return a < b ? a : b;
+}
+
 
 ///
 @safe @nogc @betterC unittest
