@@ -5913,6 +5913,30 @@ private:
 {
     import std.meta : AliasSeq;
 
+    static T addRound(T)(uint rm)
+    {
+        pragma(inline, false) static void blockopt(ref T x) {}
+        pragma(inline, false);
+        FloatingPointControl fpctrl;
+        fpctrl.rounding = rm;
+        T x = 1;
+        blockopt(x); // avoid constant propagation by the optimizer
+        x += 0.1L;
+        return x;
+    }
+
+    static T subRound(T)(uint rm)
+    {
+        pragma(inline, false) static void blockopt(ref T x) {}
+        pragma(inline, false);
+        FloatingPointControl fpctrl;
+        fpctrl.rounding = rm;
+        T x = -1;
+        blockopt(x); // avoid constant propagation by the optimizer
+        x -= 0.1L;
+        return x;
+    }
+
     static foreach (T; AliasSeq!(float, double, real))
     {{
         /* Be careful with changing the rounding mode, it interferes
@@ -5921,18 +5945,6 @@ private:
          */
 
         {
-            static T addRound(T)(uint rm)
-            {
-                pragma(inline, false) static void blockopt(ref T x) {}
-                pragma(inline, false);
-                FloatingPointControl fpctrl;
-                fpctrl.rounding = rm;
-                T x = 1;
-                blockopt(x); // avoid constant propagation by the optimizer
-                x += 0.1L;
-                return x;
-            }
-
             T u = addRound!(T)(FloatingPointControl.roundUp);
             T d = addRound!(T)(FloatingPointControl.roundDown);
             T z = addRound!(T)(FloatingPointControl.roundToZero);
@@ -5942,18 +5954,6 @@ private:
         }
 
         {
-            static T subRound(T)(uint rm)
-            {
-                pragma(inline, false) static void blockopt(ref T x) {}
-                pragma(inline, false);
-                FloatingPointControl fpctrl;
-                fpctrl.rounding = rm;
-                T x = -1;
-                blockopt(x); // avoid constant propagation by the optimizer
-                x -= 0.1L;
-                return x;
-            }
-
             T u = subRound!(T)(FloatingPointControl.roundUp);
             T d = subRound!(T)(FloatingPointControl.roundDown);
             T z = subRound!(T)(FloatingPointControl.roundToZero);
